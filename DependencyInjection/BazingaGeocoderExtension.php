@@ -10,6 +10,7 @@
 
 namespace Bazinga\GeocoderBundle\DependencyInjection;
 
+use Bazinga\GeocoderBundle\Plugin\FakeIpPlugin;
 use Bazinga\GeocoderBundle\ProviderFactory\ProviderFactoryInterface;
 use Geocoder\Provider\Cache\ProviderCache;
 use Geocoder\Provider\Provider;
@@ -37,14 +38,15 @@ class BazingaGeocoderExtension extends Extension
         if (true === $config['profiling']['enabled']) {
             $loader->load('profiling.yml');
         }
-        $this->loadProviders($container, $config);
 
         if ($config['fake_ip']['enabled']) {
-            $definition = $container->getDefinition('bazinga_geocoder.event_listener.fake_request');
-            $definition->replaceArgument(0, $config['fake_ip']['ip']);
+            $definition = $container->getDefinition(FakeIpPlugin::class);
+            $definition->replaceArgument(1, $config['fake_ip']['ip']);
         } else {
-            $container->removeDefinition('bazinga_geocoder.event_listener.fake_request');
+            $container->removeDefinition(FakeIpPlugin::class);
         }
+
+        $this->loadProviders($container, $config);
     }
 
     private function loadProviders(ContainerBuilder $container, array $config)
